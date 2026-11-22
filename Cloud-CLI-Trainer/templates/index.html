@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cloud & Linux CLI Command Trainer</title>
+    <style>
+        body {
+            background-color: #0d1117;
+            color: #00ff41;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .terminal {
+            width: 750px;
+            background: #161b22;
+            border: 2px solid #00ff41;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
+        }
+        h1 { text-align: center; margin-top: 0; border-bottom: 1px solid #30363d; padding-bottom: 10px; }
+        .stats { display: flex; justify-content: space-between; font-size: 18px; margin-bottom: 20px; }
+        .cmd-box {
+            background: #000;
+            padding: 15px;
+            border-left: 4px solid #00ff41;
+            font-size: 22px;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+        .hint { color: #8b949e; font-size: 14px; margin-bottom: 15px; }
+        input[type="text"] {
+            width: 100%;
+            box-sizing: border-box;
+            background: #0d1117;
+            border: 1px solid #00ff41;
+            color: #fff;
+            padding: 12px;
+            font-size: 18px;
+            font-family: inherit;
+            outline: none;
+        }
+        button {
+            background: #00ff41;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            font-family: inherit;
+        }
+        button:hover { background: #00cc33; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; color: #c9d1d9; }
+        th, td { border: 1px solid #30363d; padding: 8px; text-align: left; }
+        th { background: #21262d; color: #00ff41; }
+    </style>
+</head>
+<body>
+
+<div class="terminal">
+    <h1>>_ CLOUD & LINUX CLI TRAINER</h1>
+    
+    <div class="stats">
+        <span>Time: <strong id="timer">45</strong>s</span>
+        <span>Score: <strong id="score">0</strong></span>
+        <span>Commands: <strong id="count">0</strong></span>
+    </div>
+
+    <div class="cmd-box" id="command-display">Press START to initialize terminal...</div>
+    <div class="hint" id="hint-display">Hint: Real AWS, Linux & Networking commands will appear here.</div>
+
+    <input type="text" id="user-input" placeholder="Type exact command here..." disabled autocomplete="off">
+    
+    <div>
+        <button id="start-btn" onclick="startGame()">START SESSION</button>
+    </div>
+
+    <h3>🏆 TOP SCORES (SQL + EXCEL BACKEND)</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Rank</th>
+                <th>Engineer Name</th>
+                <th>Score</th>
+                <th>WPM</th>
+                <th>Timestamp</th>
+            </tr>
+        </thead>
+        <tbody id="leaderboard-body"></tbody>
+    </table>
+</div>
+
+<script>
+    const commands = [
+        { cmd: "aws s3 ls", hint: "List all Amazon S3 buckets" },
+        { cmd: "chmod 400 key.pem", hint: "Set read-only permission for SSH private key" },
+        { cmd: "docker ps -a", hint: "List all running and stopped containers" },
+        { cmd: "netstat -tulnp", hint: "Show active listening ports and services" },
+        { cmd: "ssh ubuntu@10.0.1.5", hint: "Connect to remote EC2 Linux instance" },
+        { cmd: "git status", hint: "Check modified files in local repository" },
+        { cmd: "ping -c 4 8.8.8.8", hint: "Test network connectivity to Google DNS" },
+        { cmd: "sudo systemctl restart nginx", hint: "Restart Nginx web server service" },
+        { cmd: "aws ec2 describe-instances", hint: "Fetch metadata of AWS EC2 instances" },
+        { cmd: "nmap -sV 192.168.1.1", hint: "Scan open ports and service versions" }
+    ];
+
+    let currentCmd = "";
+    let score = 0;
+    let count = 0;
+    let timeLeft = 45;
+    let timerInterval;
+    let totalChars = 0;
+
+    function loadLeaderboard() {
+        fetch('/leaderboard')
+            .then(res => res.json())
+            .then(data => {
+                const tbody = document.getElementById('leaderboard-body');
+                tbody.innerHTML = "";
+                data.forEach((row, index) => {
+                    tbody.innerHTML += `<tr>
+                        <td>#${index + 1}</td>
+                        <td>${row[0]}</td>
+                        <td>${row[1]}</td>
+                        <td>${row[2]}</td>
+                        <td>${row[3]}</td>
+                    </tr>`;
+                });
+            });
+    }
+
+    function nextCommand() {
+        const randomObj = commands[Math.floor(Math.random() * commands.length)];
+        currentCmd = randomObj.cmd;
+        document.getElementById('command-display').innerText = "$ " + currentCmd;
+        document.getElementById('hint-display').innerText = "Task: " + randomObj.hint;
+        document.getElementById('user-input').value = "";
+    }
+
+    function startGame() {
+        score = 0;
+        count = 0;
+        totalChars = 0;
+        timeLeft = 45;
+        document.getElementById('score').innerText = score;
+        document.getElementById('count').innerText = count;
+        document.getElementById('timer').innerText = timeLeft;
+        
+        const input = document.getElementById('user-input');
+        input.disabled = false;
+        input.focus();
+        document.getElementById('start-btn').disabled = true;
+
+        nextCommand();
+
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            document.getElementById('timer').innerText = timeLeft;
+            if (timeLeft <= 0) {
+                endGame();
+            }
+        }, 1000);
+    }
+
+    document.getElementById('user-input').addEventListener('input', function() {
+        if (this.value === currentCmd) {
+            score += 10;
+            count++;
+            totalChars += currentCmd.length;
+            document.getElementById('score').innerText = score;
+            document.getElementById('count').innerText = count;
+            nextCommand();
+        }
+    });
+
+    function endGame() {
+        clearInterval(timerInterval);
+        const input = document.getElementById('user-input');
+        input.disabled = true;
+        input.value = "";
+        document.getElementById('start-btn').disabled = false;
+        document.getElementById('command-display').innerText = "SESSION COMPLETE! Final Score: " + score;
+
+        const wpm = Math.round((totalChars / 5) / 0.75);
+        const playerName = prompt("Session Over! Enter your name for the SQL/Excel Leaderboard:", "Rahul") || "Guest";
+
+        fetch('/save_score', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: playerName, score: score, wpm: wpm })
+        }).then(() => loadLeaderboard());
+    }
+
+    window.onload = loadLeaderboard;
+</script>
+
+</body>
+</html>
