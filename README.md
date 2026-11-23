@@ -1,33 +1,39 @@
-# 💻 Cloud & Linux CLI Command Trainer
+# >_ Cloud & Linux CLI Command Trainer
 
-An interactive, terminal-themed web application designed to improve command-line syntax accuracy and typing speed across **Linux, AWS, Docker, Git, and Networking** commands.
+An interactive, gamified web-based Command-Line Interface (CLI) trainer built to help students and cloud aspirants build muscle memory and speed across **Linux, AWS, Docker, Git, and Networking** commands.
 
-🔗 **Live Demo:** [https://cloud-cli-trainer.onrender.com](https://cloud-cli-trainer.onrender.com)
-
----
-
-## 📌 Overview
-Beginners often memorize CLI commands but make syntax or flag errors under time pressure (e.g., `chmod 400 key.pem`, `netstat -tulnp`). Unlike static cheat sheets, this application provides a timed terminal environment with real-time character validation, Net WPM calculation, and persistent leaderboard tracking.
+🔗 **Live Demo:** [https://cloud-cli-trainer-java.onrender.com](https://cloud-cli-trainer-java.onrender.com)
 
 ---
 
 ## ✨ Key Features
-- **Timed Practice Sessions:** 60-second live production timer (45-second local build) with instant prompt switching.
-- **Exact-Match Validation & Scoring:** Awards `+10` points only for exact command matches and calculates **Net Words Per Minute (Net WPM)**.
-- **Dual Storage Persistence:**
-  - **SQLite Database (`leaderboard.db`):** Powers the real-time Top-5 leaderboard using parameterized SQL queries.
-  - **CSV Audit Log (`scores.csv`):** Automatically logs every session in an MS Excel-compatible format.
-- **Mobile-Responsive UI:** Configured with `autocapitalize="off"`, `autocorrect="off"`, real-time input auto-validation, and a dedicated `RUN` button for seamless smartphone usage.
+
+- **12 Progressive Difficulty Tiers (`E1` – `P3`):** Structured across Easy (`E1–E3`), Medium (`M1–M3`), Hard (`H1–H3`), and Pro (`P1–P3`) levels.
+- **Adaptive Auto-Progression Mode:** Automatically upgrades the user's tier (`E1 → P3`) after every 3 consecutive accurate commands.
+- **Category Filters:** Practice specific tracks (**Linux, AWS, Docker, Git, Networking**) or all mixed together.
+- **Real-Time Metrics & Feedback:** Live Net WPM, Accuracy %, Mistake Counter, and character-by-character green/red syntax highlighting.
+- **Custom Timer Modes:** Choose between `30s`, `60s`, and `120s` practice sessions.
+- **Top-5 Leaderboard & MS Excel Export:** Persistent score tracking with a one-click **Export CSV** download (`scores.csv`).
 
 ---
 
-## 🛠️ Tech Stack
-- **Frontend:** HTML5, CSS3, Vanilla JavaScript
-- **Backend:** Python 3, Flask
-- **Database & Storage:** SQLite 3 (`leaderboard.db`), Python `csv` module (`scores.csv`)
-- **Deployment:** GitHub, Render Cloud, Gunicorn WSGI Server
+## 🛠️ Tech Stack & OOPS Architecture
+
+- **Frontend:** HTML5, CSS3, Vanilla JavaScript (ES6+ Fetch API, responsive dark terminal UI)
+- **Backend:** Core Java 17 (`com.sun.net.httpserver.HttpServer`)
+  - `ScoreRecord`: Encapsulates player metrics, serialization to CSV, and JSON formatting.
+  - `JavaScoreManager`: Handles thread-safe (`synchronized`) file I/O persistence and leaderboard sorting.
+  - `CLITrainerServer`: Lightweight REST server handling `/`, `/save_score`, `/leaderboard`, and `/download_csv`.
+- **Storage:** MS Excel-compatible CSV persistence (`scores.csv`)
+- **Containerization & Hosting:** Docker (`eclipse-temurin:17-jdk-alpine`) deployed on Render Cloud via GitHub
 
 ---
 
-## 🏗️ Architecture & API Routes
-- `GET /` — Renders the terminal-themed frontend (`templates/index.html`)
+## 🚀 Run Locally with Java 17
+
+```bash
+# Compile the Java server
+javac CLITrainerServer.java
+
+# Run the server
+java CLITrainerServer
