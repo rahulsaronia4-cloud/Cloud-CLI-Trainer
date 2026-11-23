@@ -161,19 +161,28 @@
     .task-desc {
       font-size: 1.15rem;
       font-weight: 500;
-      margin-bottom: 1rem;
+      margin-bottom: 0.9rem;
     }
 
-    .hint-box {
-      display: none;
-      background: rgba(245, 158, 11, 0.1);
-      border-left: 3px solid var(--warning);
+    /* Visible Command Box */
+    .cmd-display {
+      background: rgba(56, 189, 248, 0.08);
+      border: 1px dashed rgba(56, 189, 248, 0.4);
       padding: 0.65rem 1rem;
-      border-radius: 4px;
-      font-size: 0.9rem;
-      color: #fcd34d;
-      margin-top: 0.8rem;
+      border-radius: 8px;
       font-family: 'Fira Code', monospace;
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .cmd-display code {
+      color: #7dd3fc;
+      font-weight: 600;
+      font-size: 1.05rem;
     }
 
     /* Terminal Window */
@@ -254,7 +263,7 @@
 
     .actions {
       display: flex;
-      justify-content: space-between;
+      justify-content: flex-end;
       margin-top: 1rem;
       gap: 0.8rem;
     }
@@ -285,10 +294,10 @@
 
     <!-- Track Selector -->
     <div class="tracks">
-      <button class="track-btn active" onclick="switchTrack('linux')">🐧 Linux CLI</button>
-      <button class="track-btn" onclick="switchTrack('docker')">🐳 Docker CLI</button>
-      <button class="track-btn" onclick="switchTrack('git')">🌿 Git CLI</button>
-      <button class="track-btn" onclick="switchTrack('aws')">☁️ AWS CLI</button>
+      <button class="track-btn active" onclick="switchTrack('linux', this)">🐧 Linux CLI</button>
+      <button class="track-btn" onclick="switchTrack('docker', this)">🐳 Docker CLI</button>
+      <button class="track-btn" onclick="switchTrack('git', this)">🌿 Git CLI</button>
+      <button class="track-btn" onclick="switchTrack('aws', this)">☁️ AWS CLI</button>
     </div>
 
     <!-- Stats & Level Progress -->
@@ -306,11 +315,14 @@
       <span class="badge" id="score-badge">Score: 0</span>
     </div>
 
-    <!-- Current Task Card -->
+    <!-- Current Task Card with Visible Command -->
     <div class="challenge-card">
       <div class="task-number" id="task-num">TASK 1 OF 5</div>
       <div class="task-desc" id="task-desc">Loading task...</div>
-      <div class="hint-box" id="hint-box"></div>
+      <div class="cmd-display">
+        <span>Command:</span>
+        <code id="cmd-ref">pwd</code>
+      </div>
     </div>
 
     <!-- Interactive Terminal -->
@@ -319,10 +331,10 @@
         <span class="dot red"></span>
         <span class="dot yellow"></span>
         <span class="dot green"></span>
-        <span class="terminal-title" id="term-title">rahul@cloud-lab:~/linux$</span>
+        <span class="terminal-title" id="term-title">rahul@linux:~$</span>
       </div>
       <div class="terminal-body" id="terminal-output">
-        <div class="log-line log-info">Welcome! Type the exact command below and press Enter.</div>
+        <div class="log-line log-info">Welcome! Upar di gayi command ko niche type karein aur Enter dabayein.</div>
         <div class="input-row">
           <span class="prompt" id="prompt-label">rahul@linux:~$</span>
           <input type="text" id="cmd-input" autocomplete="off" autofocus placeholder="Type command here..." />
@@ -332,13 +344,11 @@
 
     <!-- Bottom Controls -->
     <div class="actions">
-      <button class="btn-sm" onclick="toggleHint()">💡 Show Hint</button>
       <button class="btn-sm" onclick="clearTerminal()">🧹 Clear Terminal</button>
     </div>
   </div>
 
   <script>
-    // Har topic ke har level mein exactly 5 commands hain
     const curriculum = {
       linux: {
         prompt: "rahul@linux:~$",
@@ -346,21 +356,21 @@
           {
             title: "Level 1: Navigation & Files",
             commands: [
-              { desc: "Current working directory ka path check karein", ans: ["pwd"], hint: "Print Working Directory -> pwd", out: "/home/rahul/projects" },
-              { desc: "Directory ke andar sabhi files aur folders list karein", ans: ["ls", "ls -la", "ls -l"], hint: "List files -> ls", out: "index.html  app.py  logs/  config.env" },
-              { desc: "'cloud-lab' naam ka naya folder banayein", ans: ["mkdir cloud-lab"], hint: "Make directory -> mkdir cloud-lab", out: "Directory 'cloud-lab' created." },
-              { desc: "'cloud-lab' directory ke andar move karein", ans: ["cd cloud-lab"], hint: "Change directory -> cd cloud-lab", out: "Moved to /home/rahul/projects/cloud-lab" },
-              { desc: "'server.log' naam ki ek empty file banayein", ans: ["touch server.log"], hint: "Create empty file -> touch server.log", out: "File 'server.log' created." }
+              { desc: "Current working directory ka path check karein", showCmd: "pwd", ans: ["pwd"], out: "/home/rahul/projects" },
+              { desc: "Directory ke andar sabhi hidden aur normal files list karein", showCmd: "ls -la", ans: ["ls", "ls -la", "ls -l"], out: "drwxr-xr-x 4 rahul rahul 4096 index.html app.py" },
+              { desc: "'cloud-lab' naam ka naya folder banayein", showCmd: "mkdir cloud-lab", ans: ["mkdir cloud-lab"], out: "Directory 'cloud-lab' created." },
+              { desc: "'cloud-lab' directory ke andar move karein", showCmd: "cd cloud-lab", ans: ["cd cloud-lab"], out: "Moved to /home/rahul/projects/cloud-lab" },
+              { desc: "'server.log' naam ki ek empty file banayein", showCmd: "touch server.log", ans: ["touch server.log"], out: "File 'server.log' created." }
             ]
           },
           {
             title: "Level 2: Permissions & System",
             commands: [
-              { desc: "'deploy.sh' script ko executable permission (+x) dein", ans: ["chmod +x deploy.sh"], hint: "Change mode -> chmod +x deploy.sh", out: "Permissions updated for deploy.sh" },
-              { desc: "'app.log' file ke andar 'ERROR' word search karein", ans: ["grep ERROR app.log", "grep \"ERROR\" app.log"], hint: "Search pattern -> grep ERROR app.log", out: "[2026-11-23] ERROR: Connection timeout" },
-              { desc: "System mein chal rahi running processes check karein", ans: ["ps aux", "top", "ps"], hint: "Process status -> ps aux", out: "PID   USER     COMMAND\n1042  rahul    python3 app.py" },
-              { desc: "Disk space usage human-readable format mein dekhein", ans: ["df -h"], hint: "Disk free -> df -h", out: "Filesystem      Size  Used Avail Use%\n/dev/sda1        50G   18G   32G  36%" },
-              { desc: "Currently logged-in username print karein", ans: ["whoami"], hint: "Who am I -> whoami", out: "rahul" }
+              { desc: "'deploy.sh' script ko executable permission (+x) dein", showCmd: "chmod +x deploy.sh", ans: ["chmod +x deploy.sh"], out: "Permissions updated for deploy.sh" },
+              { desc: "'app.log' file ke andar 'ERROR' word search karein", showCmd: "grep ERROR app.log", ans: ["grep ERROR app.log", "grep \"ERROR\" app.log"], out: "[2026-11-23] ERROR: Connection timeout" },
+              { desc: "System mein chal rahi running processes check karein", showCmd: "ps aux", ans: ["ps aux", "top", "ps"], out: "PID   USER     COMMAND\n1042  rahul    python3 app.py" },
+              { desc: "Disk space usage human-readable format mein dekhein", showCmd: "df -h", ans: ["df -h"], out: "Filesystem      Size  Used Avail Use%\n/dev/sda1        50G   18G   32G  36%" },
+              { desc: "Currently logged-in username print karein", showCmd: "whoami", ans: ["whoami"], out: "rahul" }
             ]
           }
         ]
@@ -371,21 +381,21 @@
           {
             title: "Level 1: Containers & Images",
             commands: [
-              { desc: "System par installed Docker version check karein", ans: ["docker --version", "docker -v"], hint: "docker --version", out: "Docker version 27.3.1, build ce12230" },
-              { desc: "Docker Hub se 'nginx' image download (pull) karein", ans: ["docker pull nginx"], hint: "docker pull nginx", out: "Using default tag: latest\nStatus: Downloaded newer image for nginx:latest" },
-              { desc: "Local system mein maujood sabhi Docker images list karein", ans: ["docker images", "docker image ls"], hint: "docker images", out: "REPOSITORY   TAG       IMAGE ID       SIZE\nnginx        latest    a8758716bb6a   187MB" },
-              { desc: "'nginx' container ko detached mode (-d) mein port 8080:80 par run karein", ans: ["docker run -d -p 8080:80 nginx", "docker run -p 8080:80 -d nginx"], hint: "docker run -d -p 8080:80 nginx", out: "8f92c1b4d7e0a123456789abcdef" },
-              { desc: "Abhi chal rahe sabhi active containers check karein", ans: ["docker ps"], hint: "docker ps", out: "CONTAINER ID   IMAGE   STATUS         PORTS\n8f92c1b4d7e0   nginx   Up 5 seconds   0.0.0.0:8080->80/tcp" }
+              { desc: "System par installed Docker version check karein", showCmd: "docker --version", ans: ["docker --version", "docker -v"], out: "Docker version 27.3.1, build ce12230" },
+              { desc: "Docker Hub se 'nginx' image download (pull) karein", showCmd: "docker pull nginx", ans: ["docker pull nginx"], out: "Using default tag: latest\nStatus: Downloaded newer image for nginx:latest" },
+              { desc: "Local system mein maujood sabhi Docker images list karein", showCmd: "docker images", ans: ["docker images", "docker image ls"], out: "REPOSITORY   TAG       IMAGE ID       SIZE\nnginx        latest    a8758716bb6a   187MB" },
+              { desc: "'nginx' container ko detached mode (-d) mein port 8080:80 par run karein", showCmd: "docker run -d -p 8080:80 nginx", ans: ["docker run -d -p 8080:80 nginx", "docker run -p 8080:80 -d nginx"], out: "8f92c1b4d7e0a123456789abcdef" },
+              { desc: "Abhi chal rahe sabhi active containers check karein", showCmd: "docker ps", ans: ["docker ps"], out: "CONTAINER ID   IMAGE   STATUS         PORTS\n9f8e7d6c5b4a   nginx   Up 5 seconds   0.0.0.0:8080->80/tcp" }
             ]
           },
           {
             title: "Level 2: Management & Cleanup",
             commands: [
-              { desc: "Stopped containers ko bhi include karke sabhi containers dekhein", ans: ["docker ps -a"], hint: "docker ps -a", out: "Showing all running and exited containers..." },
-              { desc: "Current directory ke Dockerfile se 'my-app' image build karein", ans: ["docker build -t my-app ."], hint: "docker build -t my-app .", out: "Successfully built 4e5f6a7b8c9d\nSuccessfully tagged my-app:latest" },
-              { desc: "'web-server' container ke logs check karein", ans: ["docker logs web-server"], hint: "docker logs web-server", out: "Server listening on port 80..." },
-              { desc: "'web-server' container ko stop karein", ans: ["docker stop web-server"], hint: "docker stop web-server", out: "web-server" },
-              { desc: "Stopped 'web-server' container ko remove (delete) karein", ans: ["docker rm web-server"], hint: "docker rm web-server", out: "web-server" }
+              { desc: "Stopped containers ko bhi include karke sabhi containers dekhein", showCmd: "docker ps -a", ans: ["docker ps -a"], out: "Showing all running and exited containers..." },
+              { desc: "Current directory ke Dockerfile se 'my-app' image build karein", showCmd: "docker build -t my-app .", ans: ["docker build -t my-app ."], out: "Successfully built 4e5f6a7b8c9d\nSuccessfully tagged my-app:latest" },
+              { desc: "'web-server' container ke logs check karein", showCmd: "docker logs web-server", ans: ["docker logs web-server"], out: "Server listening on port 80..." },
+              { desc: "'web-server' container ko stop karein", showCmd: "docker stop web-server", ans: ["docker stop web-server"], out: "web-server" },
+              { desc: "Stopped 'web-server' container ko remove (delete) karein", showCmd: "docker rm web-server", ans: ["docker rm web-server"], out: "web-server" }
             ]
           }
         ]
@@ -396,11 +406,11 @@
           {
             title: "Level 1: Core Workflow",
             commands: [
-              { desc: "Current folder mein nayi Git repository initialize karein", ans: ["git init"], hint: "git init", out: "Initialized empty Git repository in /home/rahul/app/.git/" },
-              { desc: "Modified aur untracked files ka status check karein", ans: ["git status"], hint: "git status", out: "On branch main\nUntracked files: index.html" },
-              { desc: "Sabhi files ko staging area mein add karein", ans: ["git add .", "git add -A"], hint: "git add .", out: "All changes staged for commit." },
-              { desc: "'Initial commit' message ke saath changes commit karein", ans: ["git commit -m \"Initial commit\"", "git commit -m 'Initial commit'"], hint: "git commit -m \"Initial commit\"", out: "[main 7a8b9c1] Initial commit\n 1 file changed, 45 insertions(+)" },
-              { desc: "Local commits ko remote 'origin main' branch par push karein", ans: ["git push origin main", "git push -u origin main"], hint: "git push origin main", out: "To https://github.com/rahulsaronia4-cloud/app.git\n * [new branch] main -> main" }
+              { desc: "Current folder mein nayi Git repository initialize karein", showCmd: "git init", ans: ["git init"], out: "Initialized empty Git repository in /home/rahul/app/.git/" },
+              { desc: "Modified aur untracked files ka status check karein", showCmd: "git status", ans: ["git status"], out: "On branch main\nUntracked files: index.html" },
+              { desc: "Sabhi files ko staging area mein add karein", showCmd: "git add .", ans: ["git add .", "git add -A"], out: "All files staged for commit." },
+              { desc: "'Initial commit' message ke saath changes commit karein", showCmd: "git commit -m \"Initial commit\"", ans: ["git commit -m \"Initial commit\"", "git commit -m 'Initial commit'"], out: "[main 7a8b9c1] Initial commit\n 1 file changed, 45 insertions(+)" },
+              { desc: "Local commits ko remote 'origin main' branch par push karein", showCmd: "git push origin main", ans: ["git push origin main", "git push -u origin main"], out: "To https://github.com/rahulsaronia4-cloud/app.git\n * [new branch] main -> main" }
             ]
           }
         ]
@@ -411,11 +421,11 @@
           {
             title: "Level 1: S3 & IAM Basics",
             commands: [
-              { desc: "Current AWS IAM user identity aur account details verify karein", ans: ["aws sts get-caller-identity"], hint: "aws sts get-caller-identity", out: "{\n  \"UserId\": \"AIDAEXAMPLE\",\n  \"Account\": \"123456789012\",\n  \"Arn\": \"arn:aws:iam::123456789012:user/rahul\"\n}" },
-              { desc: "Apne account ke sabhi S3 buckets list karein", ans: ["aws s3 ls"], hint: "aws s3 ls", out: "2026-11-20 10:15:00 rahul-cloud-assets-2026" },
-              { desc: "'s3://rahul-demo-bucket' naam ka naya S3 bucket banayein", ans: ["aws s3 mb s3://rahul-demo-bucket"], hint: "Make bucket -> aws s3 mb s3://rahul-demo-bucket", out: "make_bucket: rahul-demo-bucket" },
-              { desc: "Local 'index.html' file ko 's3://rahul-demo-bucket/' par upload karein", ans: ["aws s3 cp index.html s3://rahul-demo-bucket/"], hint: "Copy file -> aws s3 cp index.html s3://rahul-demo-bucket/", out: "upload: ./index.html to s3://rahul-demo-bucket/index.html" },
-              { desc: "Sabhi running EC2 instances ki list describe karein", ans: ["aws ec2 describe-instances"], hint: "aws ec2 describe-instances", out: "{\n  \"Reservations\": []\n}" }
+              { desc: "Current AWS IAM user identity aur account details verify karein", showCmd: "aws sts get-caller-identity", ans: ["aws sts get-caller-identity"], out: "{\n  \"UserId\": \"AIDAEXAMPLE\",\n  \"Account\": \"123456789012\",\n  \"Arn\": \"arn:aws:iam::123456789012:user/rahul\"\n}" },
+              { desc: "Apne account ke sabhi S3 buckets list karein", showCmd: "aws s3 ls", ans: ["aws s3 ls"], out: "2026-11-20 10:15:00 rahul-cloud-assets-2026" },
+              { desc: "'s3://rahul-demo-bucket' naam ka naya S3 bucket banayein", showCmd: "aws s3 mb s3://rahul-demo-bucket", ans: ["aws s3 mb s3://rahul-demo-bucket"], out: "make_bucket: rahul-demo-bucket" },
+              { desc: "Local 'index.html' file ko 's3://rahul-demo-bucket/' par upload karein", showCmd: "aws s3 cp index.html s3://rahul-demo-bucket/", ans: ["aws s3 cp index.html s3://rahul-demo-bucket/"], out: "upload: ./index.html to s3://rahul-demo-bucket/index.html" },
+              { desc: "Sabhi running EC2 instances ki list describe karein", showCmd: "aws ec2 describe-instances", ans: ["aws ec2 describe-instances"], out: "{\n  \"Reservations\": []\n}" }
             ]
           }
         ]
@@ -430,13 +440,13 @@
     const inputEl = document.getElementById("cmd-input");
     const outputEl = document.getElementById("terminal-output");
 
-    function switchTrack(track) {
+    function switchTrack(track, btn) {
       currentTrack = track;
       levelIdx = 0;
       cmdIdx = 0;
 
-      document.querySelectorAll(".track-btn").forEach(btn => btn.classList.remove("active"));
-      event.target.classList.add("active");
+      document.querySelectorAll(".track-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
 
       clearTerminal();
       appendLog(`Switched to ${track.toUpperCase()} track. Complete 5 commands to clear Level 1!`, "log-info");
@@ -455,8 +465,7 @@
 
       document.getElementById("task-num").textContent = `TASK ${cmdIdx + 1} OF ${levelData.commands.length}`;
       document.getElementById("task-desc").textContent = currentCmd.desc;
-      document.getElementById("hint-box").textContent = `Hint: ${currentCmd.hint}`;
-      document.getElementById("hint-box").style.display = "none";
+      document.getElementById("cmd-ref").textContent = currentCmd.showCmd;
 
       document.getElementById("term-title").textContent = trackData.prompt;
       document.getElementById("prompt-label").textContent = trackData.prompt;
@@ -469,11 +478,6 @@
       const inputRow = document.querySelector(".input-row");
       outputEl.insertBefore(div, inputRow);
       outputEl.scrollTop = outputEl.scrollHeight;
-    }
-
-    function toggleHint() {
-      const hintBox = document.getElementById("hint-box");
-      hintBox.style.display = hintBox.style.display === "block" ? "none" : "block";
     }
 
     function clearTerminal() {
@@ -500,7 +504,6 @@
           appendLog(currentCmd.out, "log-success");
           cmdIdx++;
 
-          // Check if 5 commands of current level are completed
           if (cmdIdx >= levelData.commands.length) {
             document.getElementById("progress-fill").style.width = "100%";
             appendLog(`🎉 ${levelData.title} Complete! (+50 Bonus Points)`, "log-success");
@@ -511,19 +514,18 @@
               cmdIdx = 0;
               appendLog(`🔓 Unlocked: ${trackData.levels[levelIdx].title}`, "log-info");
             } else {
-              appendLog(`🏆 All available levels in ${currentTrack.toUpperCase()} completed! Restarting Level 1 for practice.`, "log-info");
+              appendLog(`🏆 All available levels in ${currentTrack.toUpperCase()} completed! Restarting Level 1.`, "log-info");
               levelIdx = 0;
               cmdIdx = 0;
             }
           }
           updateUI();
         } else {
-          appendLog(`bash: command mismatch or incorrect syntax. Try again or click 'Show Hint'.`, "log-error");
+          appendLog(`bash: incorrect command. Upar 'Command:' box mein likhi command exact type karein.`, "log-error");
         }
       }
     });
 
-    // Initialize first view
     updateUI();
   </script>
 
