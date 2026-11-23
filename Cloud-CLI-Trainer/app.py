@@ -1,71 +1,114 @@
+import csv
 import os
 import sqlite3
-import csv
 from datetime import datetime
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, jsonify, render_template, request, send_file
 
 app = Flask(__name__)
 
-DB_NAME = "leaderboard.db"
-EXCEL_FILE = "scores.csv"
 
-def init_storage():
-    # 1. SQLite Database & Table setup
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute('''CREATE TABLE IF NOT EXISTS scores (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    player_name TEXT,
-                    score INTEGER,
-                    wpm INTEGER,
-                    date TEXT
-                )''')
-    conn.commit()
-    conn.close()
+class ScoreManager:
+    def __init__(self, db_file="leaderboard.db", csv_file="scores.csv"):
+        self.db_file = db_file
+        self.csv_file = csv_file
+        self.init_storage()
 
-    # 2. Excel-compatible CSV file setup
-    if not os.path.exists(EXCEL_FILE):
-        with open(EXCEL_FILE, mode='w', newline='') as f:
+    def init_storage(self):
+        conn = sqlite3.connect(self.db_file)
+        cursor = conn.cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS scores_v2 (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                player_name TEXT,
+                score INTEGER,
+                wpm INTEGER,
+                accuracy INTEGER,
+                mistakes INTEGER,
+                tier TEXT,
+                date TEXT
+            )
+        """)
+        conn.commit()
+        conn.close()
+
+        if not os.path.exists(self.csv_file):
+            with open(self.csv_file, mode="w", newline="", encoding="utf-8") as f:
+                writer = csv.writer(f)
+                writer.writerow(["Player Name", "Score", "WPM", "Accuracy %", "Mistakes", "Tier", "Date"])
+
+    def save_record(self, player_name, score, wpm, accuracy, mistakes, tier):
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
+
+        conn = sqlite3.connect(self.db_file)
+        cursor = conn.cursor()
+        cursor.execute(
+            """INSERT INTO scores_v2 (player_name, score, wpm, accuracy, mistakes, tier, date)
+               VALUES (?, ?, ?, ?, ?, ?, ?)""",
+            (player_name, score, wpm, accuracy, mistakes, tier, timestamp),
+        )
+        conn.commit()
+        conn.close()
+
+        with open(self.csv_file, mode="a", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
-            writer.writerow(["Player Name", "Score", "WPM", "Date"])
+            writer.writerow([player_name, score, wpm, accuracy, mistakes, tier, timestamp])
 
-# Render / Gunicorn startup par bhi database aur CSV initialize karega
-init_storage()
+    def get_top_scores(self, limit=5):
+        conn = sqlite3.connect(self.db_file)
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT player_name, score, wpm, accuracy, tier, date FROM scores_v2 ORDER BY score DESC LIMIT ?;",
+            (limit,),
+        )
+        rows = cursor.fetchall()
+        conn.close()
+        return [
+            {
+                "player_name": r[0],
+                "score": r[1],
+                "wpm": r[2],
+                "accuracy": r[3],
+                "tier": r[4],
+                "date": r[5],
+            }
+            for r in rows
+        ]
 
-@app.route('/')
-def home():
-    return render_template('index.html')
 
-@app.route('/save_score', methods=['POST'])
+score_manager = ScoreManager()
+
+
+@app.route("/")
+def index():
+    return render_template("index.html")
+
+
+@app.route("/save_score", methods=["POST"])
 def save_score():
-    data = request.json
-    name = data.get('name', 'Anonymous')
-    score = int(data.get('score', 0))
-    wpm = int(data.get('wpm', 0))
-    now = datetime.now().strftime("%Y-%m-%d %H:%M")
+    data = request.get_json()
+    score_manager.save_record(
+        player_name=data.get("player_name", "Anonymous"),
+        score=int(data.get("score", 0)),
+        wpm=int(data.get("wpm", 0)),
+        accuracy=int(data.get("accuracy", 100)),
+        mistakes=int(data.get("mistakes", 0)),
+        tier=data.get("tier", "E1"),
+    )
+    return jsonify({"status": "success"})
 
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("INSERT INTO scores (player_name, score, wpm, date) VALUES (?, ?, ?, ?)",
-              (name, score, wpm, now))
-    conn.commit()
-    conn.close()
 
-    with open(EXCEL_FILE, mode='a', newline='') as f:
-        writer = csv.writer(f)
-        writer.writerow([name, score, wpm, now])
+@app.route("/leaderboard", methods=["GET"])
+def leaderboard():
+    return jsonify(score_manager.get_top_scores(5))
 
-    return jsonify({"status": "saved"})
 
-@app.route('/leaderboard', methods=['GET'])
-def get_leaderboard():
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("SELECT player_name, score, wpm, date FROM scores ORDER BY score DESC LIMIT 5")
-    rows = c.fetchall()
-    conn.close()
-    return jsonify(rows)
+@app.route("/download_csv", methods=["GET"])
+def download_csv():
+    if os.path.exists(score_manager.csv_file):
+        return send_file(score_manager.csv_file, as_attachment=True)
+    return jsonify({"error": "No CSV file found"}), 404
 
-if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port)
+
+if __name__ == "__main__":
+    app.run(debug=True)
+    
