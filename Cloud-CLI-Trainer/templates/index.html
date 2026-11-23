@@ -1,260 +1,443 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cloud & Linux CLI Trainer</title>
-    <style>
-        body {
-            background-color: #0d1117;
-            color: #00ff41;
-            font-family: 'Courier New', Courier, monospace;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 15px;
-            box-sizing: border-box;
-        }
-        .terminal {
-            width: 100%;
-            max-width: 750px;
-            border: 2px solid #00ff41;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
-            background-color: #090c10;
-        }
-        h1 {
-            text-align: center;
-            border-bottom: 1px solid #00ff41;
-            padding-bottom: 10px;
-            margin-top: 0;
-            font-size: 1.5rem;
-        }
-        .stats {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 15px;
-            font-size: 1rem;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .task-box {
-            background: #161b22;
-            padding: 15px;
-            border-left: 4px solid #00ff41;
-            margin-bottom: 15px;
-            font-size: 1.1rem;
-            word-break: break-word;
-        }
-        .input-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        input {
-            flex: 1;
-            padding: 12px;
-            background: #0d1117;
-            border: 1px solid #00ff41;
-            color: #00ff41;
-            font-family: inherit;
-            font-size: 1rem;
-            box-sizing: border-box;
-            outline: none;
-        }
-        button {
-            background: #00ff41;
-            color: #0d1117;
-            border: none;
-            padding: 12px 18px;
-            font-family: inherit;
-            font-weight: bold;
-            font-size: 1rem;
-            cursor: pointer;
-        }
-        button:hover { background: #00cc33; }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-            font-size: 0.9rem;
-        }
-        th, td {
-            border: 1px solid #1f2937;
-            padding: 8px;
-            text-align: left;
-        }
-        th { background-color: #161b22; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cloud & Linux CLI Command Trainer</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      background-color: #0d1117;
+      color: #c9d1d9;
+      font-family: "Courier New", Courier, monospace;
+      margin: 0;
+      padding: 14px;
+      display: flex;
+      justify-content: center;
+    }
+    .container {
+      width: 100%;
+      max-width: 780px;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 10px;
+      padding: 18px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      border-bottom: 1px solid #30363d;
+      padding-bottom: 12px;
+      margin-bottom: 14px;
+    }
+    h2 { color: #58a6ff; margin: 0; font-size: 1.2rem; }
+    .badge {
+      background: #1f6feb22;
+      color: #58a6ff;
+      border: 1px solid #1f6feb;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: bold;
+    }
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    select, input, button {
+      background: #0d1117;
+      color: #c9d1d9;
+      border: 1px solid #30363d;
+      padding: 10px;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.9rem;
+    }
+    button {
+      background: #238636;
+      color: #ffffff;
+      font-weight: bold;
+      cursor: pointer;
+      border: none;
+    }
+    button:hover { background: #2ea043; }
+    .btn-secondary {
+      background: #21262d;
+      border: 1px solid #30363d;
+      color: #58a6ff;
+      font-size: 0.82rem;
+      padding: 7px 12px;
+    }
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(105px, 1fr));
+      gap: 8px;
+      background: #0d1117;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 14px;
+      border: 1px solid #30363d;
+      text-align: center;
+    }
+    .stat-item span { display: block; font-size: 0.75rem; color: #8b949e; }
+    .stat-item strong { font-size: 1.05rem; color: #58a6ff; }
+    .prompt-box {
+      background: #010409;
+      border-left: 4px solid #238636;
+      padding: 14px;
+      margin-bottom: 12px;
+      border-radius: 6px;
+    }
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      color: #8b949e;
+      margin-bottom: 6px;
+    }
+    .command-text {
+      font-size: 1.15rem;
+      font-weight: bold;
+      word-break: break-all;
+      letter-spacing: 0.4px;
+    }
+    .char-correct { color: #3fb950; }
+    .char-wrong { color: #f85149; background: #f8514922; }
+    .char-pending { color: #c9d1d9; }
+    .hint-text { font-size: 0.8rem; color: #8b949e; margin-top: 8px; }
+    .input-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .input-row input { flex: 1; font-size: 1rem; border-color: #58a6ff66; }
+    .lb-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: 0.84rem;
+    }
+    th, td {
+      border: 1px solid #30363d;
+      padding: 8px;
+      text-align: left;
+    }
+    th { background: #0d1117; color: #58a6ff; }
+  </style>
 </head>
 <body>
-
-<div class="terminal">
-    <h1>>_ CLOUD & LINUX CLI TRAINER</h1>
-    
-    <div class="stats">
-        <span>Time: <strong id="timer">60</strong>s</span>
-        <span>Score: <strong id="score">0</strong></span>
-        <span>Commands: <strong id="cmd-count">0</strong></span>
+  <div class="container">
+    <div class="header">
+      <h2>&gt;_ Cloud &amp; Linux CLI Trainer</h2>
+      <span class="badge" id="activeTierBadge">Tier: Auto (E1 → P3)</span>
     </div>
 
-    <div class="task-box" id="task-display">
-        Press "START SESSION" to begin your DevOps & Cloud CLI drill!
+    <div class="controls">
+      <select id="categorySelect">
+        <option value="ALL">Category: All</option>
+        <option value="Linux">Linux</option>
+        <option value="AWS">AWS</option>
+        <option value="Docker">Docker</option>
+        <option value="Git">Git</option>
+        <option value="Networking">Networking</option>
+      </select>
+
+      <select id="tierSelect">
+        <option value="AUTO" selected>Mode: Auto-Progression</option>
+        <option value="E1">Easy - E1 (Basic)</option>
+        <option value="E2">Easy - E2 (Flags)</option>
+        <option value="E3">Easy - E3 (Paths)</option>
+        <option value="M1">Medium - M1 (Standard)</option>
+        <option value="M2">Medium - M2 (Options)</option>
+        <option value="M3">Medium - M3 (Permissions)</option>
+        <option value="H1">Hard - H1 (Admin)</option>
+        <option value="H2">Hard - H2 (Containers)</option>
+        <option value="H3">Hard - H3 (Pipelines)</option>
+        <option value="P1">Pro - P1 (Awk/Grep)</option>
+        <option value="P2">Pro - P2 (Chaining)</option>
+        <option value="P3">Pro - P3 (Cloud Prod)</option>
+      </select>
+
+      <select id="timerSelect">
+        <option value="30">Timer: 30s</option>
+        <option value="60" selected>Timer: 60s</option>
+        <option value="120">Timer: 120s</option>
+      </select>
+
+      <button onclick="startSession()">START SESSION</button>
     </div>
 
-    <p id="hint-display" style="color: #8b949e; margin-top: -5px; font-size: 0.95rem;"></p>
-
-    <div class="input-group">
-        <input type="text" id="cli-input" placeholder="Type exact command here..." 
-               autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false" disabled>
-        <button id="submit-btn" onclick="checkCommand()" disabled>RUN</button>
+    <div class="stats-bar">
+      <div class="stat-item"><span>Time Left</span><strong id="timeDisplay">60s</strong></div>
+      <div class="stat-item"><span>Score</span><strong id="scoreDisplay">0</strong></div>
+      <div class="stat-item"><span>Net WPM</span><strong id="wpmDisplay">0</strong></div>
+      <div class="stat-item"><span>Accuracy</span><strong id="accDisplay">100%</strong></div>
+      <div class="stat-item"><span>Mistakes</span><strong id="mistakeDisplay">0</strong></div>
     </div>
 
-    <button id="start-btn" onclick="startSession()">START SESSION</button>
+    <div class="prompt-box">
+      <div class="meta-row">
+        <span id="cmdMeta">Select filters &amp; press START</span>
+        <span id="streakDisplay">Streak: 0/3</span>
+      </div>
+      <div class="command-text" id="commandPrompt">$ ready_to_practice</div>
+      <div class="hint-text" id="hintDisplay">Tip: Exact match awards tier points &amp; upgrades level in Auto mode.</div>
+    </div>
 
-    <h3 style="margin-top: 25px;">🏆 TOP SCORES (SQL + EXCEL BACKEND)</h3>
+    <div class="input-row">
+      <input
+        type="text"
+        id="commandInput"
+        autocapitalize="off"
+        autocorrect="off"
+        autocomplete="off"
+        spellcheck="false"
+        placeholder="Type command here..."
+        disabled
+      />
+      <button id="runBtn" onclick="manualCheck()">RUN</button>
+    </div>
+
+    <div class="lb-header">
+      <h3 style="margin:0; font-size:1rem;">🏆 Top-5 Leaderboard</h3>
+      <a href="/download_csv"><button type="button" class="btn-secondary">⬇ Export CSV</button></a>
+    </div>
+
     <table>
-        <thead>
-            <tr>
-                <th>Rank</th>
-                <th>Engineer Name</th>
-                <th>Score</th>
-                <th>WPM</th>
-                <th>Timestamp</th>
-            </tr>
-        </thead>
-        <tbody id="leaderboard-body"></tbody>
+      <thead>
+        <tr>
+          <th>Player</th>
+          <th>Score</th>
+          <th>WPM</th>
+          <th>Acc</th>
+          <th>Tier</th>
+        </tr>
+      </thead>
+      <tbody id="leaderboardBody"></tbody>
     </table>
-</div>
+  </div>
 
-<script>
-    const challenges = [
-        { task: "Check current working directory", cmd: "pwd" },
-        { task: "List all files including hidden ones", cmd: "ls -la" },
-        { task: "Restart Nginx web server service", cmd: "sudo systemctl restart nginx" },
-        { task: "List all running Docker containers", cmd: "docker ps" },
-        { task: "List all AWS S3 buckets", cmd: "aws s3 ls" },
-        { task: "Check Git repository status", cmd: "git status" },
-        { task: "View active network connections and ports", cmd: "ss -tulnp" },
-        { task: "Check disk space usage in human-readable format", cmd: "df -h" },
-        { task: "Pull latest changes from remote Git repo", cmd: "git pull" },
-        { task: "Display Linux kernel and system info", cmd: "uname -a" }
+  <script>
+    const tierOrder = ["E1", "E2", "E3", "M1", "M2", "M3", "H1", "H2", "H3", "P1", "P2", "P3"];
+
+    const commandBank = [
+      { cmd: "ls -la", cat: "Linux", tier: "E1", pts: 10, hint: "List all files including hidden ones" },
+      { cmd: "pwd", cat: "Linux", tier: "E1", pts: 10, hint: "Print current working directory" },
+      { cmd: "git status", cat: "Git", tier: "E1", pts: 10, hint: "Show working tree status" },
+      { cmd: "docker ps", cat: "Docker", tier: "E2", pts: 10, hint: "List running containers" },
+      { cmd: "aws s3 ls", cat: "AWS", tier: "E2", pts: 10, hint: "List all S3 buckets" },
+      { cmd: "git branch -a", cat: "Git", tier: "E2", pts: 10, hint: "List local and remote branches" },
+      { cmd: "ping -c 4 8.8.8.8", cat: "Networking", tier: "E3", pts: 12, hint: "Send 4 ICMP echo packets" },
+      { cmd: "cat /etc/os-release", cat: "Linux", tier: "E3", pts: 12, hint: "Display Linux OS version info" },
+      { cmd: "docker images -a", cat: "Docker", tier: "M1", pts: 15, hint: "List all local Docker images" },
+      { cmd: "git commit -m \"init\"", cat: "Git", tier: "M1", pts: 15, hint: "Record staged changes with message" },
+      { cmd: "aws iam list-users", cat: "AWS", tier: "M2", pts: 15, hint: "List IAM users in AWS account" },
+      { cmd: "curl -I https://example.com", cat: "Networking", tier: "M2", pts: 15, hint: "Fetch HTTP response headers only" },
+      { cmd: "chmod 400 key.pem", cat: "Linux", tier: "M3", pts: 18, hint: "Set read-only permission for owner" },
+      { cmd: "git checkout -b feature-auth", cat: "Git", tier: "M3", pts: 18, hint: "Create and switch to new branch" },
+      { cmd: "netstat -tulnp", cat: "Networking", tier: "H1", pts: 20, hint: "Show active listening TCP/UDP ports" },
+      { cmd: "aws ec2 describe-instances", cat: "AWS", tier: "H1", pts: 20, hint: "Inspect EC2 instance metadata" },
+      { cmd: "docker run -d -p 8080:80 nginx", cat: "Docker", tier: "H2", pts: 22, hint: "Run detached Nginx container on port 8080" },
+      { cmd: "ss -tulpn | grep LISTEN", cat: "Networking", tier: "H2", pts: 22, hint: "Filter listening sockets using ss" },
+      { cmd: "find /var/log -name \"*.log\" -mtime -1", cat: "Linux", tier: "H3", pts: 25, hint: "Find logs modified in last 24 hours" },
+      { cmd: "docker compose up -d --build", cat: "Docker", tier: "H3", pts: 25, hint: "Rebuild and start multi-container app" },
+      { cmd: "ps aux | grep python | awk '{print $2}'", cat: "Linux", tier: "P1", pts: 30, hint: "Extract PIDs of running Python processes" },
+      { cmd: "git log --oneline --graph --all", cat: "Git", tier: "P1", pts: 30, hint: "Visualize full commit history tree" },
+      { cmd: "tar -czvf backup.tar.gz /var/www && ls -lh", cat: "Linux", tier: "P2", pts: 35, hint: "Compress web directory and check archive size" },
+      { cmd: "aws s3 sync ./build s3://prod-app --delete", cat: "AWS", tier: "P3", pts: 40, hint: "Mirror build folder to S3 bucket" }
     ];
 
-    let currentChallenge = null;
+    let currentObj = null;
     let score = 0;
-    let commandsCompleted = 0;
-    let totalChars = 0;
+    let totalValidChars = 0;
+    let totalKeystrokes = 0;
+    let mistakes = 0;
+    let streak = 0;
+    let autoTierIndex = 0;
     let timeLeft = 60;
+    let selectedDuration = 60;
     let timerInterval = null;
-    let gameActive = false;
 
-    const inputEl = document.getElementById("cli-input");
-    const submitBtn = document.getElementById("submit-btn");
-    const taskEl = document.getElementById("task-display");
-    const hintEl = document.getElementById("hint-display");
+    const inputEl = document.getElementById("commandInput");
+    const promptEl = document.getElementById("commandPrompt");
 
     function startSession() {
-        score = 0;
-        commandsCompleted = 0;
-        totalChars = 0;
-        timeLeft = 60;
-        gameActive = true;
+      score = 0;
+      totalValidChars = 0;
+      totalKeystrokes = 0;
+      mistakes = 0;
+      streak = 0;
+      autoTierIndex = 0;
+      selectedDuration = parseInt(document.getElementById("timerSelect").value);
+      timeLeft = selectedDuration;
 
-        document.getElementById("score").innerText = score;
-        document.getElementById("cmd-count").innerText = commandsCompleted;
-        document.getElementById("timer").innerText = timeLeft;
+      updateStats();
+      inputEl.disabled = false;
+      inputEl.value = "";
+      inputEl.focus();
+      nextCommand();
 
-        inputEl.disabled = false;
-        submitBtn.disabled = false;
-        inputEl.value = "";
-        inputEl.focus();
-        nextChallenge();
-
-        clearInterval(timerInterval);
-        timerInterval = setInterval(() => {
-            timeLeft--;
-            document.getElementById("timer").innerText = timeLeft;
-            if (timeLeft <= 0) endSession();
-        }, 1000);
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        updateStats();
+        if (timeLeft <= 0) endSession();
+      }, 1000);
     }
 
-    function nextChallenge() {
-        currentChallenge = challenges[Math.floor(Math.random() * challenges.length)];
-        taskEl.innerText = "Task: " + currentChallenge.task;
-        hintEl.innerText = "Command: " + currentChallenge.cmd;
+    function nextCommand() {
+      const cat = document.getElementById("categorySelect").value;
+      const tierMode = document.getElementById("tierSelect").value;
+      const targetTier = (tierMode === "AUTO") ? tierOrder[autoTierIndex] : tierMode;
+
+      let pool = commandBank.filter(item => {
+        const catOk = (cat === "ALL" || item.cat === cat);
+        const tierOk = (item.tier === targetTier);
+        return catOk && tierOk;
+      });
+
+      if (pool.length === 0) {
+        pool = commandBank.filter(item => cat === "ALL" || item.cat === cat);
+      }
+
+      currentObj = pool[Math.floor(Math.random() * pool.length)];
+      document.getElementById("activeTierBadge").textContent =
+        tierMode === "AUTO" ? `Auto Mode: ${targetTier}` : `Fixed Tier: ${targetTier}`;
+      document.getElementById("cmdMeta").textContent =
+        `Category: ${currentObj.cat} | Level: ${currentObj.tier} (+${currentObj.pts} pts)`;
+      document.getElementById("hintDisplay").textContent = `Hint: ${currentObj.hint}`;
+      renderHighlightedPrompt("");
     }
 
-    function checkCommand() {
-        if (!gameActive || !currentChallenge) return;
-        const typed = inputEl.value.trim().toLowerCase();
-        if (typed === currentChallenge.cmd.toLowerCase()) {
-            score += 10;
-            commandsCompleted++;
-            totalChars += currentChallenge.cmd.length;
-            document.getElementById("score").innerText = score;
-            document.getElementById("cmd-count").innerText = commandsCompleted;
-            inputEl.value = "";
-            nextChallenge();
+    function renderHighlightedPrompt(typed) {
+      if (!currentObj) return;
+      const target = currentObj.cmd;
+      let html = "";
+      for (let i = 0; i < target.length; i++) {
+        if (i < typed.length) {
+          if (typed[i] === target[i]) {
+            html += `<span class="char-correct">${target[i]}</span>`;
+          } else {
+            html += `<span class="char-wrong">${target[i]}</span>`;
+          }
+        } else {
+          html += `<span class="char-pending">${target[i]}</span>`;
         }
+      }
+      promptEl.innerHTML = html;
     }
 
-    // Mobile aur Desktop dono par Enter/Done ya exact match hote hi turant chalega
-    inputEl.addEventListener("keydown", function(e) {
-        if (e.key === "Enter" || e.keyCode === 13) {
-            e.preventDefault();
-            checkCommand();
-        }
+    function handleSuccess() {
+      score += currentObj.pts;
+      totalValidChars += currentObj.cmd.length;
+      streak++;
+      if (document.getElementById("tierSelect").value === "AUTO" && streak >= 3) {
+        streak = 0;
+        if (autoTierIndex < tierOrder.length - 1) autoTierIndex++;
+      }
+      inputEl.value = "";
+      nextCommand();
+    }
+
+    inputEl.addEventListener("input", () => {
+      if (!currentObj) return;
+      const typed = inputEl.value;
+      totalKeystrokes++;
+      renderHighlightedPrompt(typed);
+
+      if (!currentObj.cmd.startsWith(typed)) {
+        mistakes++;
+      }
+      if (typed === currentObj.cmd) {
+        handleSuccess();
+      }
+      updateStats();
     });
 
-    inputEl.addEventListener("input", function() {
-        checkCommand();
-    });
-
-    function endSession() {
-        clearInterval(timerInterval);
-        gameActive = false;
-        inputEl.disabled = true;
-        submitBtn.disabled = true;
-        const wpm = Math.round((totalChars / 5) / 1);
-        taskEl.innerText = `SESSION COMPLETE! Final Score: ${score}`;
-        hintEl.innerText = "";
-
-        setTimeout(() => {
-            const playerName = prompt(`Session Over! Score: ${score} | WPM: ${wpm}\nEnter your name for the SQL & Excel Leaderboard:`);
-            if (playerName && playerName.trim() !== "") {
-                fetch('/save_score', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name: playerName.trim(), score: score, wpm: wpm })
-                }).then(() => loadLeaderboard());
-            }
-        }, 100);
+    function manualCheck() {
+      if (!currentObj) return;
+      if (inputEl.value.trim() === currentObj.cmd) {
+        handleSuccess();
+      } else {
+        mistakes++;
+      }
+      updateStats();
     }
 
-    function loadLeaderboard() {
-        fetch('/leaderboard')
-            .then(res => res.json())
-            .then(data => {
-                const tbody = document.getElementById("leaderboard-body");
-                tbody.innerHTML = "";
-                data.forEach((row, index) => {
-                    tbody.innerHTML += `
-                        <tr>
-                            <td>#${index + 1}</td>
-                            <td>${row[0]}</td>
-                            <td>${row[1]}</td>
-                            <td>${row[2]}</td>
-                            <td>${row[3]}</td>
-                        </tr>`;
-                });
-            });
+    function calculateAccuracy() {
+      if (totalKeystrokes === 0) return 100;
+      const correct = Math.max(0, totalKeystrokes - mistakes);
+      return Math.round((correct / totalKeystrokes) * 100);
+    }
+
+    function calculateWPM() {
+      const elapsedMin = (selectedDuration - timeLeft) / 60;
+      if (elapsedMin <= 0) return 0;
+      return Math.round((totalValidChars / 5) / elapsedMin);
+    }
+
+    function updateStats() {
+      document.getElementById("timeDisplay").textContent = `${timeLeft}s`;
+      document.getElementById("scoreDisplay").textContent = score;
+      document.getElementById("wpmDisplay").textContent = calculateWPM();
+      document.getElementById("accDisplay").textContent = `${calculateAccuracy()}%`;
+      document.getElementById("mistakeDisplay").textContent = mistakes;
+      document.getElementById("streakDisplay").textContent = `Streak: ${streak}/3`;
+    }
+
+    async function endSession() {
+      clearInterval(timerInterval);
+      inputEl.disabled = true;
+      promptEl.textContent = "$ session_complete";
+
+      const finalWpm = Math.round((totalValidChars / 5) / (selectedDuration / 60));
+      const finalAcc = calculateAccuracy();
+      const tierMode = document.getElementById("tierSelect").value;
+      const finalTier = tierMode === "AUTO" ? `Auto(${tierOrder[autoTierIndex]})` : tierMode;
+
+      const playerName = prompt(`Time's up!\nScore: ${score} | WPM: ${finalWpm} | Accuracy: ${finalAcc}%\nEnter your name:`);
+      if (playerName && playerName.trim() !== "") {
+        await fetch("/save_score", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            player_name: playerName.trim(),
+            score: score,
+            wpm: finalWpm,
+            accuracy: finalAcc,
+            mistakes: mistakes,
+            tier: finalTier
+          })
+        });
+        loadLeaderboard();
+      }
+    }
+
+    async function loadLeaderboard() {
+      try {
+        const res = await fetch("/leaderboard");
+        const data = await res.json();
+        document.getElementById("leaderboardBody").innerHTML = data
+          .map(r => `<tr><td>${r.player_name}</td><td>${r.score}</td><td>${r.wpm}</td><td>${r.accuracy}%</td><td>${r.tier}</td></tr>`)
+          .join("");
+      } catch (e) {
+        console.error(e);
+      }
     }
 
     loadLeaderboard();
-</script>
+  </script>
 </body>
 </html>
