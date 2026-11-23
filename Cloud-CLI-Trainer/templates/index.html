@@ -3,441 +3,529 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cloud & Linux CLI Command Trainer</title>
+  <title>Cloud-CLI-Trainer | Multi-Track Practice</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; }
-    body {
-      background-color: #0d1117;
-      color: #c9d1d9;
-      font-family: "Courier New", Courier, monospace;
+    * {
       margin: 0;
-      padding: 14px;
-      display: flex;
-      justify-content: center;
+      padding: 0;
+      box-sizing: border-box;
     }
+
+    :root {
+      --bg-dark: #090d16;
+      --panel-bg: #111827;
+      --terminal-bg: #05080f;
+      --primary: #38bdf8;
+      --success: #22c55e;
+      --error: #ef4444;
+      --warning: #f59e0b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #1e293b;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Poppins', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+    }
+
     .container {
       width: 100%;
-      max-width: 780px;
-      background: #161b22;
-      border: 1px solid #30363d;
-      border-radius: 10px;
-      padding: 18px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+      max-width: 850px;
     }
-    .header {
+
+    header {
+      text-align: center;
+      margin-bottom: 1.8rem;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      color: var(--primary);
+      margin-bottom: 0.3rem;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    /* Topic Tabs */
+    .tracks {
+      display: flex;
+      gap: 0.8rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+
+    .track-btn {
+      background: var(--panel-bg);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      padding: 0.65rem 1.3rem;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.25s;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .track-btn:hover {
+      border-color: var(--primary);
+      color: var(--text-main);
+    }
+
+    .track-btn.active {
+      background: var(--primary);
+      color: #04121e;
+      border-color: var(--primary);
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.35);
+    }
+
+    /* Status & Progress Bar */
+    .stats-bar {
+      background: var(--panel-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem 1.4rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
-      gap: 8px;
-      border-bottom: 1px solid #30363d;
-      padding-bottom: 12px;
-      margin-bottom: 14px;
+      gap: 1rem;
+      margin-bottom: 1.2rem;
     }
-    h2 { color: #58a6ff; margin: 0; font-size: 1.2rem; }
+
     .badge {
-      background: #1f6feb22;
-      color: #58a6ff;
-      border: 1px solid #1f6feb;
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 0.78rem;
-      font-weight: bold;
-    }
-    .controls {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
-      gap: 8px;
-      margin-bottom: 14px;
-    }
-    select, input, button {
-      background: #0d1117;
-      color: #c9d1d9;
-      border: 1px solid #30363d;
-      padding: 10px;
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--primary);
+      padding: 0.35rem 0.8rem;
       border-radius: 6px;
-      font-family: inherit;
+      font-weight: 600;
       font-size: 0.9rem;
     }
-    button {
-      background: #238636;
-      color: #ffffff;
-      font-weight: bold;
-      cursor: pointer;
-      border: none;
+
+    .progress-wrapper {
+      flex: 1;
+      min-width: 200px;
     }
-    button:hover { background: #2ea043; }
-    .btn-secondary {
-      background: #21262d;
-      border: 1px solid #30363d;
-      color: #58a6ff;
-      font-size: 0.82rem;
-      padding: 7px 12px;
-    }
-    .stats-bar {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(105px, 1fr));
-      gap: 8px;
-      background: #0d1117;
-      padding: 10px;
-      border-radius: 8px;
-      margin-bottom: 14px;
-      border: 1px solid #30363d;
-      text-align: center;
-    }
-    .stat-item span { display: block; font-size: 0.75rem; color: #8b949e; }
-    .stat-item strong { font-size: 1.05rem; color: #58a6ff; }
-    .prompt-box {
-      background: #010409;
-      border-left: 4px solid #238636;
-      padding: 14px;
-      margin-bottom: 12px;
-      border-radius: 6px;
-    }
-    .meta-row {
+
+    .progress-label {
       display: flex;
       justify-content: space-between;
-      font-size: 0.78rem;
-      color: #8b949e;
-      margin-bottom: 6px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 0.35rem;
     }
-    .command-text {
+
+    .progress-bar {
+      height: 8px;
+      background: var(--bg-dark);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--success);
+      transition: width 0.3s ease;
+    }
+
+    /* Challenge Card */
+    .challenge-card {
+      background: var(--panel-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .task-number {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--warning);
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+    }
+
+    .task-desc {
       font-size: 1.15rem;
-      font-weight: bold;
-      word-break: break-all;
-      letter-spacing: 0.4px;
+      font-weight: 500;
+      margin-bottom: 1rem;
     }
-    .char-correct { color: #3fb950; }
-    .char-wrong { color: #f85149; background: #f8514922; }
-    .char-pending { color: #c9d1d9; }
-    .hint-text { font-size: 0.8rem; color: #8b949e; margin-top: 8px; }
+
+    .hint-box {
+      display: none;
+      background: rgba(245, 158, 11, 0.1);
+      border-left: 3px solid var(--warning);
+      padding: 0.65rem 1rem;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      color: #fcd34d;
+      margin-top: 0.8rem;
+      font-family: 'Fira Code', monospace;
+    }
+
+    /* Terminal Window */
+    .terminal {
+      background: var(--terminal-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .terminal-header {
+      background: #161f30;
+      padding: 0.65rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+    .red { background: #ef4444; }
+    .yellow { background: #f59e0b; }
+    .green { background: #22c55e; }
+
+    .terminal-title {
+      margin-left: 0.5rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-family: 'Fira Code', monospace;
+    }
+
+    .terminal-body {
+      padding: 1.2rem;
+      font-family: 'Fira Code', monospace;
+      min-height: 220px;
+      max-height: 300px;
+      overflow-y: auto;
+      font-size: 0.95rem;
+    }
+
+    .log-line {
+      margin-bottom: 0.5rem;
+      line-height: 1.5;
+    }
+
+    .log-cmd { color: var(--primary); }
+    .log-success { color: var(--success); }
+    .log-error { color: var(--error); }
+    .log-info { color: var(--text-muted); }
+
     .input-row {
       display: flex;
-      gap: 8px;
-      margin-bottom: 16px;
+      align-items: center;
+      gap: 0.6rem;
+      margin-top: 0.5rem;
     }
-    .input-row input { flex: 1; font-size: 1rem; border-color: #58a6ff66; }
-    .lb-header {
+
+    .prompt {
+      color: var(--success);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    input[type="text"] {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-main);
+      font-family: 'Fira Code', monospace;
+      font-size: 0.95rem;
+      width: 100%;
+    }
+
+    .actions {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      margin-top: 10px;
+      margin-top: 1rem;
+      gap: 0.8rem;
     }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 8px;
-      font-size: 0.84rem;
+
+    .btn-sm {
+      background: var(--panel-bg);
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-family: 'Poppins', sans-serif;
     }
-    th, td {
-      border: 1px solid #30363d;
-      padding: 8px;
-      text-align: left;
+
+    .btn-sm:hover {
+      border-color: var(--primary);
     }
-    th { background: #0d1117; color: #58a6ff; }
   </style>
 </head>
 <body>
+
   <div class="container">
-    <div class="header">
-      <h2>&gt;_ Cloud &amp; Linux CLI Trainer</h2>
-      <span class="badge" id="activeTierBadge">Tier: Auto (E1 → P3)</span>
+    <header>
+      <h1>Cloud-CLI-Trainer</h1>
+      <p>Har track aur har level mein 5 real-world CLI commands practice karein</p>
+    </header>
+
+    <!-- Track Selector -->
+    <div class="tracks">
+      <button class="track-btn active" onclick="switchTrack('linux')">🐧 Linux CLI</button>
+      <button class="track-btn" onclick="switchTrack('docker')">🐳 Docker CLI</button>
+      <button class="track-btn" onclick="switchTrack('git')">🌿 Git CLI</button>
+      <button class="track-btn" onclick="switchTrack('aws')">☁️ AWS CLI</button>
     </div>
 
-    <div class="controls">
-      <select id="categorySelect">
-        <option value="ALL">Category: All</option>
-        <option value="Linux">Linux</option>
-        <option value="AWS">AWS</option>
-        <option value="Docker">Docker</option>
-        <option value="Git">Git</option>
-        <option value="Networking">Networking</option>
-      </select>
-
-      <select id="tierSelect">
-        <option value="AUTO" selected>Mode: Auto-Progression</option>
-        <option value="E1">Easy - E1 (Basic)</option>
-        <option value="E2">Easy - E2 (Flags)</option>
-        <option value="E3">Easy - E3 (Paths)</option>
-        <option value="M1">Medium - M1 (Standard)</option>
-        <option value="M2">Medium - M2 (Options)</option>
-        <option value="M3">Medium - M3 (Permissions)</option>
-        <option value="H1">Hard - H1 (Admin)</option>
-        <option value="H2">Hard - H2 (Containers)</option>
-        <option value="H3">Hard - H3 (Pipelines)</option>
-        <option value="P1">Pro - P1 (Awk/Grep)</option>
-        <option value="P2">Pro - P2 (Chaining)</option>
-        <option value="P3">Pro - P3 (Cloud Prod)</option>
-      </select>
-
-      <select id="timerSelect">
-        <option value="30">Timer: 30s</option>
-        <option value="60" selected>Timer: 60s</option>
-        <option value="120">Timer: 120s</option>
-      </select>
-
-      <button onclick="startSession()">START SESSION</button>
-    </div>
-
+    <!-- Stats & Level Progress -->
     <div class="stats-bar">
-      <div class="stat-item"><span>Time Left</span><strong id="timeDisplay">60s</strong></div>
-      <div class="stat-item"><span>Score</span><strong id="scoreDisplay">0</strong></div>
-      <div class="stat-item"><span>Net WPM</span><strong id="wpmDisplay">0</strong></div>
-      <div class="stat-item"><span>Accuracy</span><strong id="accDisplay">100%</strong></div>
-      <div class="stat-item"><span>Mistakes</span><strong id="mistakeDisplay">0</strong></div>
-    </div>
-
-    <div class="prompt-box">
-      <div class="meta-row">
-        <span id="cmdMeta">Select filters &amp; press START</span>
-        <span id="streakDisplay">Streak: 0/3</span>
+      <span class="badge" id="level-badge">Level 1: Basics</span>
+      <div class="progress-wrapper">
+        <div class="progress-label">
+          <span>Level Progress</span>
+          <span id="progress-text">Command 1 / 5</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
       </div>
-      <div class="command-text" id="commandPrompt">$ ready_to_practice</div>
-      <div class="hint-text" id="hintDisplay">Tip: Exact match awards tier points &amp; upgrades level in Auto mode.</div>
+      <span class="badge" id="score-badge">Score: 0</span>
     </div>
 
-    <div class="input-row">
-      <input
-        type="text"
-        id="commandInput"
-        autocapitalize="off"
-        autocorrect="off"
-        autocomplete="off"
-        spellcheck="false"
-        placeholder="Type command here..."
-        disabled
-      />
-      <button id="runBtn" onclick="manualCheck()">RUN</button>
+    <!-- Current Task Card -->
+    <div class="challenge-card">
+      <div class="task-number" id="task-num">TASK 1 OF 5</div>
+      <div class="task-desc" id="task-desc">Loading task...</div>
+      <div class="hint-box" id="hint-box"></div>
     </div>
 
-    <div class="lb-header">
-      <h3 style="margin:0; font-size:1rem;">🏆 Top-5 Leaderboard</h3>
-      <a href="/download_csv"><button type="button" class="btn-secondary">⬇ Export CSV</button></a>
+    <!-- Interactive Terminal -->
+    <div class="terminal" onclick="document.getElementById('cmd-input').focus()">
+      <div class="terminal-header">
+        <span class="dot red"></span>
+        <span class="dot yellow"></span>
+        <span class="dot green"></span>
+        <span class="terminal-title" id="term-title">rahul@cloud-lab:~/linux$</span>
+      </div>
+      <div class="terminal-body" id="terminal-output">
+        <div class="log-line log-info">Welcome! Type the exact command below and press Enter.</div>
+        <div class="input-row">
+          <span class="prompt" id="prompt-label">rahul@linux:~$</span>
+          <input type="text" id="cmd-input" autocomplete="off" autofocus placeholder="Type command here..." />
+        </div>
+      </div>
     </div>
 
-    <table>
-      <thead>
-        <tr>
-          <th>Player</th>
-          <th>Score</th>
-          <th>WPM</th>
-          <th>Acc</th>
-          <th>Tier</th>
-        </tr>
-      </thead>
-      <tbody id="leaderboardBody"></tbody>
-    </table>
+    <!-- Bottom Controls -->
+    <div class="actions">
+      <button class="btn-sm" onclick="toggleHint()">💡 Show Hint</button>
+      <button class="btn-sm" onclick="clearTerminal()">🧹 Clear Terminal</button>
+    </div>
   </div>
 
   <script>
-    const tierOrder = ["E1", "E2", "E3", "M1", "M2", "M3", "H1", "H2", "H3", "P1", "P2", "P3"];
-
-    const commandBank = [
-      { cmd: "ls -la", cat: "Linux", tier: "E1", pts: 10, hint: "List all files including hidden ones" },
-      { cmd: "pwd", cat: "Linux", tier: "E1", pts: 10, hint: "Print current working directory" },
-      { cmd: "git status", cat: "Git", tier: "E1", pts: 10, hint: "Show working tree status" },
-      { cmd: "docker ps", cat: "Docker", tier: "E2", pts: 10, hint: "List running containers" },
-      { cmd: "aws s3 ls", cat: "AWS", tier: "E2", pts: 10, hint: "List all S3 buckets" },
-      { cmd: "git branch -a", cat: "Git", tier: "E2", pts: 10, hint: "List local and remote branches" },
-      { cmd: "ping -c 4 8.8.8.8", cat: "Networking", tier: "E3", pts: 12, hint: "Send 4 ICMP echo packets" },
-      { cmd: "cat /etc/os-release", cat: "Linux", tier: "E3", pts: 12, hint: "Display Linux OS version info" },
-      { cmd: "docker images -a", cat: "Docker", tier: "M1", pts: 15, hint: "List all local Docker images" },
-      { cmd: "git commit -m \"init\"", cat: "Git", tier: "M1", pts: 15, hint: "Record staged changes with message" },
-      { cmd: "aws iam list-users", cat: "AWS", tier: "M2", pts: 15, hint: "List IAM users in AWS account" },
-      { cmd: "curl -I https://example.com", cat: "Networking", tier: "M2", pts: 15, hint: "Fetch HTTP response headers only" },
-      { cmd: "chmod 400 key.pem", cat: "Linux", tier: "M3", pts: 18, hint: "Set read-only permission for owner" },
-      { cmd: "git checkout -b feature-auth", cat: "Git", tier: "M3", pts: 18, hint: "Create and switch to new branch" },
-      { cmd: "netstat -tulnp", cat: "Networking", tier: "H1", pts: 20, hint: "Show active listening TCP/UDP ports" },
-      { cmd: "aws ec2 describe-instances", cat: "AWS", tier: "H1", pts: 20, hint: "Inspect EC2 instance metadata" },
-      { cmd: "docker run -d -p 8080:80 nginx", cat: "Docker", tier: "H2", pts: 22, hint: "Run detached Nginx container on port 8080" },
-      { cmd: "ss -tulpn | grep LISTEN", cat: "Networking", tier: "H2", pts: 22, hint: "Filter listening sockets using ss" },
-      { cmd: "find /var/log -name \"*.log\" -mtime -1", cat: "Linux", tier: "H3", pts: 25, hint: "Find logs modified in last 24 hours" },
-      { cmd: "docker compose up -d --build", cat: "Docker", tier: "H3", pts: 25, hint: "Rebuild and start multi-container app" },
-      { cmd: "ps aux | grep python | awk '{print $2}'", cat: "Linux", tier: "P1", pts: 30, hint: "Extract PIDs of running Python processes" },
-      { cmd: "git log --oneline --graph --all", cat: "Git", tier: "P1", pts: 30, hint: "Visualize full commit history tree" },
-      { cmd: "tar -czvf backup.tar.gz /var/www && ls -lh", cat: "Linux", tier: "P2", pts: 35, hint: "Compress web directory and check archive size" },
-      { cmd: "aws s3 sync ./build s3://prod-app --delete", cat: "AWS", tier: "P3", pts: 40, hint: "Mirror build folder to S3 bucket" }
-    ];
-
-    let currentObj = null;
-    let score = 0;
-    let totalValidChars = 0;
-    let totalKeystrokes = 0;
-    let mistakes = 0;
-    let streak = 0;
-    let autoTierIndex = 0;
-    let timeLeft = 60;
-    let selectedDuration = 60;
-    let timerInterval = null;
-
-    const inputEl = document.getElementById("commandInput");
-    const promptEl = document.getElementById("commandPrompt");
-
-    function startSession() {
-      score = 0;
-      totalValidChars = 0;
-      totalKeystrokes = 0;
-      mistakes = 0;
-      streak = 0;
-      autoTierIndex = 0;
-      selectedDuration = parseInt(document.getElementById("timerSelect").value);
-      timeLeft = selectedDuration;
-
-      updateStats();
-      inputEl.disabled = false;
-      inputEl.value = "";
-      inputEl.focus();
-      nextCommand();
-
-      clearInterval(timerInterval);
-      timerInterval = setInterval(() => {
-        timeLeft--;
-        updateStats();
-        if (timeLeft <= 0) endSession();
-      }, 1000);
-    }
-
-    function nextCommand() {
-      const cat = document.getElementById("categorySelect").value;
-      const tierMode = document.getElementById("tierSelect").value;
-      const targetTier = (tierMode === "AUTO") ? tierOrder[autoTierIndex] : tierMode;
-
-      let pool = commandBank.filter(item => {
-        const catOk = (cat === "ALL" || item.cat === cat);
-        const tierOk = (item.tier === targetTier);
-        return catOk && tierOk;
-      });
-
-      if (pool.length === 0) {
-        pool = commandBank.filter(item => cat === "ALL" || item.cat === cat);
-      }
-
-      currentObj = pool[Math.floor(Math.random() * pool.length)];
-      document.getElementById("activeTierBadge").textContent =
-        tierMode === "AUTO" ? `Auto Mode: ${targetTier}` : `Fixed Tier: ${targetTier}`;
-      document.getElementById("cmdMeta").textContent =
-        `Category: ${currentObj.cat} | Level: ${currentObj.tier} (+${currentObj.pts} pts)`;
-      document.getElementById("hintDisplay").textContent = `Hint: ${currentObj.hint}`;
-      renderHighlightedPrompt("");
-    }
-
-    function renderHighlightedPrompt(typed) {
-      if (!currentObj) return;
-      const target = currentObj.cmd;
-      let html = "";
-      for (let i = 0; i < target.length; i++) {
-        if (i < typed.length) {
-          if (typed[i] === target[i]) {
-            html += `<span class="char-correct">${target[i]}</span>`;
-          } else {
-            html += `<span class="char-wrong">${target[i]}</span>`;
+    // Har topic ke har level mein exactly 5 commands hain
+    const curriculum = {
+      linux: {
+        prompt: "rahul@linux:~$",
+        levels: [
+          {
+            title: "Level 1: Navigation & Files",
+            commands: [
+              { desc: "Current working directory ka path check karein", ans: ["pwd"], hint: "Print Working Directory -> pwd", out: "/home/rahul/projects" },
+              { desc: "Directory ke andar sabhi files aur folders list karein", ans: ["ls", "ls -la", "ls -l"], hint: "List files -> ls", out: "index.html  app.py  logs/  config.env" },
+              { desc: "'cloud-lab' naam ka naya folder banayein", ans: ["mkdir cloud-lab"], hint: "Make directory -> mkdir cloud-lab", out: "Directory 'cloud-lab' created." },
+              { desc: "'cloud-lab' directory ke andar move karein", ans: ["cd cloud-lab"], hint: "Change directory -> cd cloud-lab", out: "Moved to /home/rahul/projects/cloud-lab" },
+              { desc: "'server.log' naam ki ek empty file banayein", ans: ["touch server.log"], hint: "Create empty file -> touch server.log", out: "File 'server.log' created." }
+            ]
+          },
+          {
+            title: "Level 2: Permissions & System",
+            commands: [
+              { desc: "'deploy.sh' script ko executable permission (+x) dein", ans: ["chmod +x deploy.sh"], hint: "Change mode -> chmod +x deploy.sh", out: "Permissions updated for deploy.sh" },
+              { desc: "'app.log' file ke andar 'ERROR' word search karein", ans: ["grep ERROR app.log", "grep \"ERROR\" app.log"], hint: "Search pattern -> grep ERROR app.log", out: "[2026-11-23] ERROR: Connection timeout" },
+              { desc: "System mein chal rahi running processes check karein", ans: ["ps aux", "top", "ps"], hint: "Process status -> ps aux", out: "PID   USER     COMMAND\n1042  rahul    python3 app.py" },
+              { desc: "Disk space usage human-readable format mein dekhein", ans: ["df -h"], hint: "Disk free -> df -h", out: "Filesystem      Size  Used Avail Use%\n/dev/sda1        50G   18G   32G  36%" },
+              { desc: "Currently logged-in username print karein", ans: ["whoami"], hint: "Who am I -> whoami", out: "rahul" }
+            ]
           }
+        ]
+      },
+      docker: {
+        prompt: "rahul@docker:~$",
+        levels: [
+          {
+            title: "Level 1: Containers & Images",
+            commands: [
+              { desc: "System par installed Docker version check karein", ans: ["docker --version", "docker -v"], hint: "docker --version", out: "Docker version 27.3.1, build ce12230" },
+              { desc: "Docker Hub se 'nginx' image download (pull) karein", ans: ["docker pull nginx"], hint: "docker pull nginx", out: "Using default tag: latest\nStatus: Downloaded newer image for nginx:latest" },
+              { desc: "Local system mein maujood sabhi Docker images list karein", ans: ["docker images", "docker image ls"], hint: "docker images", out: "REPOSITORY   TAG       IMAGE ID       SIZE\nnginx        latest    a8758716bb6a   187MB" },
+              { desc: "'nginx' container ko detached mode (-d) mein port 8080:80 par run karein", ans: ["docker run -d -p 8080:80 nginx", "docker run -p 8080:80 -d nginx"], hint: "docker run -d -p 8080:80 nginx", out: "8f92c1b4d7e0a123456789abcdef" },
+              { desc: "Abhi chal rahe sabhi active containers check karein", ans: ["docker ps"], hint: "docker ps", out: "CONTAINER ID   IMAGE   STATUS         PORTS\n8f92c1b4d7e0   nginx   Up 5 seconds   0.0.0.0:8080->80/tcp" }
+            ]
+          },
+          {
+            title: "Level 2: Management & Cleanup",
+            commands: [
+              { desc: "Stopped containers ko bhi include karke sabhi containers dekhein", ans: ["docker ps -a"], hint: "docker ps -a", out: "Showing all running and exited containers..." },
+              { desc: "Current directory ke Dockerfile se 'my-app' image build karein", ans: ["docker build -t my-app ."], hint: "docker build -t my-app .", out: "Successfully built 4e5f6a7b8c9d\nSuccessfully tagged my-app:latest" },
+              { desc: "'web-server' container ke logs check karein", ans: ["docker logs web-server"], hint: "docker logs web-server", out: "Server listening on port 80..." },
+              { desc: "'web-server' container ko stop karein", ans: ["docker stop web-server"], hint: "docker stop web-server", out: "web-server" },
+              { desc: "Stopped 'web-server' container ko remove (delete) karein", ans: ["docker rm web-server"], hint: "docker rm web-server", out: "web-server" }
+            ]
+          }
+        ]
+      },
+      git: {
+        prompt: "rahul@git-repo:~$",
+        levels: [
+          {
+            title: "Level 1: Core Workflow",
+            commands: [
+              { desc: "Current folder mein nayi Git repository initialize karein", ans: ["git init"], hint: "git init", out: "Initialized empty Git repository in /home/rahul/app/.git/" },
+              { desc: "Modified aur untracked files ka status check karein", ans: ["git status"], hint: "git status", out: "On branch main\nUntracked files: index.html" },
+              { desc: "Sabhi files ko staging area mein add karein", ans: ["git add .", "git add -A"], hint: "git add .", out: "All changes staged for commit." },
+              { desc: "'Initial commit' message ke saath changes commit karein", ans: ["git commit -m \"Initial commit\"", "git commit -m 'Initial commit'"], hint: "git commit -m \"Initial commit\"", out: "[main 7a8b9c1] Initial commit\n 1 file changed, 45 insertions(+)" },
+              { desc: "Local commits ko remote 'origin main' branch par push karein", ans: ["git push origin main", "git push -u origin main"], hint: "git push origin main", out: "To https://github.com/rahulsaronia4-cloud/app.git\n * [new branch] main -> main" }
+            ]
+          }
+        ]
+      },
+      aws: {
+        prompt: "rahul@aws-cli:~$",
+        levels: [
+          {
+            title: "Level 1: S3 & IAM Basics",
+            commands: [
+              { desc: "Current AWS IAM user identity aur account details verify karein", ans: ["aws sts get-caller-identity"], hint: "aws sts get-caller-identity", out: "{\n  \"UserId\": \"AIDAEXAMPLE\",\n  \"Account\": \"123456789012\",\n  \"Arn\": \"arn:aws:iam::123456789012:user/rahul\"\n}" },
+              { desc: "Apne account ke sabhi S3 buckets list karein", ans: ["aws s3 ls"], hint: "aws s3 ls", out: "2026-11-20 10:15:00 rahul-cloud-assets-2026" },
+              { desc: "'s3://rahul-demo-bucket' naam ka naya S3 bucket banayein", ans: ["aws s3 mb s3://rahul-demo-bucket"], hint: "Make bucket -> aws s3 mb s3://rahul-demo-bucket", out: "make_bucket: rahul-demo-bucket" },
+              { desc: "Local 'index.html' file ko 's3://rahul-demo-bucket/' par upload karein", ans: ["aws s3 cp index.html s3://rahul-demo-bucket/"], hint: "Copy file -> aws s3 cp index.html s3://rahul-demo-bucket/", out: "upload: ./index.html to s3://rahul-demo-bucket/index.html" },
+              { desc: "Sabhi running EC2 instances ki list describe karein", ans: ["aws ec2 describe-instances"], hint: "aws ec2 describe-instances", out: "{\n  \"Reservations\": []\n}" }
+            ]
+          }
+        ]
+      }
+    };
+
+    let currentTrack = "linux";
+    let levelIdx = 0;
+    let cmdIdx = 0;
+    let score = 0;
+
+    const inputEl = document.getElementById("cmd-input");
+    const outputEl = document.getElementById("terminal-output");
+
+    function switchTrack(track) {
+      currentTrack = track;
+      levelIdx = 0;
+      cmdIdx = 0;
+
+      document.querySelectorAll(".track-btn").forEach(btn => btn.classList.remove("active"));
+      event.target.classList.add("active");
+
+      clearTerminal();
+      appendLog(`Switched to ${track.toUpperCase()} track. Complete 5 commands to clear Level 1!`, "log-info");
+      updateUI();
+    }
+
+    function updateUI() {
+      const trackData = curriculum[currentTrack];
+      const levelData = trackData.levels[levelIdx];
+      const currentCmd = levelData.commands[cmdIdx];
+
+      document.getElementById("level-badge").textContent = levelData.title;
+      document.getElementById("progress-text").textContent = `Command ${cmdIdx + 1} / ${levelData.commands.length}`;
+      document.getElementById("progress-fill").style.width = `${(cmdIdx / levelData.commands.length) * 100}%`;
+      document.getElementById("score-badge").textContent = `Score: ${score}`;
+
+      document.getElementById("task-num").textContent = `TASK ${cmdIdx + 1} OF ${levelData.commands.length}`;
+      document.getElementById("task-desc").textContent = currentCmd.desc;
+      document.getElementById("hint-box").textContent = `Hint: ${currentCmd.hint}`;
+      document.getElementById("hint-box").style.display = "none";
+
+      document.getElementById("term-title").textContent = trackData.prompt;
+      document.getElementById("prompt-label").textContent = trackData.prompt;
+    }
+
+    function appendLog(text, className) {
+      const div = document.createElement("div");
+      div.className = `log-line ${className}`;
+      div.textContent = text;
+      const inputRow = document.querySelector(".input-row");
+      outputEl.insertBefore(div, inputRow);
+      outputEl.scrollTop = outputEl.scrollHeight;
+    }
+
+    function toggleHint() {
+      const hintBox = document.getElementById("hint-box");
+      hintBox.style.display = hintBox.style.display === "block" ? "none" : "block";
+    }
+
+    function clearTerminal() {
+      const inputRow = document.querySelector(".input-row");
+      outputEl.innerHTML = "";
+      outputEl.appendChild(inputRow);
+      inputEl.focus();
+    }
+
+    inputEl.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        const userCmd = inputEl.value.trim();
+        if (!userCmd) return;
+
+        const trackData = curriculum[currentTrack];
+        const levelData = trackData.levels[levelIdx];
+        const currentCmd = levelData.commands[cmdIdx];
+
+        appendLog(`${trackData.prompt} ${userCmd}`, "log-cmd");
+        inputEl.value = "";
+
+        if (currentCmd.ans.includes(userCmd)) {
+          score += 10;
+          appendLog(currentCmd.out, "log-success");
+          cmdIdx++;
+
+          // Check if 5 commands of current level are completed
+          if (cmdIdx >= levelData.commands.length) {
+            document.getElementById("progress-fill").style.width = "100%";
+            appendLog(`🎉 ${levelData.title} Complete! (+50 Bonus Points)`, "log-success");
+            score += 50;
+
+            if (levelIdx + 1 < trackData.levels.length) {
+              levelIdx++;
+              cmdIdx = 0;
+              appendLog(`🔓 Unlocked: ${trackData.levels[levelIdx].title}`, "log-info");
+            } else {
+              appendLog(`🏆 All available levels in ${currentTrack.toUpperCase()} completed! Restarting Level 1 for practice.`, "log-info");
+              levelIdx = 0;
+              cmdIdx = 0;
+            }
+          }
+          updateUI();
         } else {
-          html += `<span class="char-pending">${target[i]}</span>`;
+          appendLog(`bash: command mismatch or incorrect syntax. Try again or click 'Show Hint'.`, "log-error");
         }
       }
-      promptEl.innerHTML = html;
-    }
-
-    function handleSuccess() {
-      score += currentObj.pts;
-      totalValidChars += currentObj.cmd.length;
-      streak++;
-      if (document.getElementById("tierSelect").value === "AUTO" && streak >= 3) {
-        streak = 0;
-        if (autoTierIndex < tierOrder.length - 1) autoTierIndex++;
-      }
-      inputEl.value = "";
-      nextCommand();
-    }
-
-    inputEl.addEventListener("input", () => {
-      if (!currentObj) return;
-      const typed = inputEl.value;
-      totalKeystrokes++;
-      renderHighlightedPrompt(typed);
-
-      if (!currentObj.cmd.startsWith(typed)) {
-        mistakes++;
-      }
-      if (typed === currentObj.cmd) {
-        handleSuccess();
-      }
-      updateStats();
     });
 
-    function manualCheck() {
-      if (!currentObj) return;
-      if (inputEl.value.trim() === currentObj.cmd) {
-        handleSuccess();
-      } else {
-        mistakes++;
-      }
-      updateStats();
-    }
-
-    function calculateAccuracy() {
-      if (totalKeystrokes === 0) return 100;
-      const correct = Math.max(0, totalKeystrokes - mistakes);
-      return Math.round((correct / totalKeystrokes) * 100);
-    }
-
-    function calculateWPM() {
-      const elapsedMin = (selectedDuration - timeLeft) / 60;
-      if (elapsedMin <= 0) return 0;
-      return Math.round((totalValidChars / 5) / elapsedMin);
-    }
-
-    function updateStats() {
-      document.getElementById("timeDisplay").textContent = `${timeLeft}s`;
-      document.getElementById("scoreDisplay").textContent = score;
-      document.getElementById("wpmDisplay").textContent = calculateWPM();
-      document.getElementById("accDisplay").textContent = `${calculateAccuracy()}%`;
-      document.getElementById("mistakeDisplay").textContent = mistakes;
-      document.getElementById("streakDisplay").textContent = `Streak: ${streak}/3`;
-    }
-
-    async function endSession() {
-      clearInterval(timerInterval);
-      inputEl.disabled = true;
-      promptEl.textContent = "$ session_complete";
-
-      const finalWpm = Math.round((totalValidChars / 5) / (selectedDuration / 60));
-      const finalAcc = calculateAccuracy();
-      const tierMode = document.getElementById("tierSelect").value;
-      const finalTier = tierMode === "AUTO" ? `Auto(${tierOrder[autoTierIndex]})` : tierMode;
-
-      const playerName = prompt(`Time's up!\nScore: ${score} | WPM: ${finalWpm} | Accuracy: ${finalAcc}%\nEnter your name:`);
-      if (playerName && playerName.trim() !== "") {
-        await fetch("/save_score", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            player_name: playerName.trim(),
-            score: score,
-            wpm: finalWpm,
-            accuracy: finalAcc,
-            mistakes: mistakes,
-            tier: finalTier
-          })
-        });
-        loadLeaderboard();
-      }
-    }
-
-    async function loadLeaderboard() {
-      try {
-        const res = await fetch("/leaderboard");
-        const data = await res.json();
-        document.getElementById("leaderboardBody").innerHTML = data
-          .map(r => `<tr><td>${r.player_name}</td><td>${r.score}</td><td>${r.wpm}</td><td>${r.accuracy}%</td><td>${r.tier}</td></tr>`)
-          .join("");
-      } catch (e) {
-        console.error(e);
-      }
-    }
-
-    loadLeaderboard();
+    // Initialize first view
+    updateUI();
   </script>
+
 </body>
 </html>
